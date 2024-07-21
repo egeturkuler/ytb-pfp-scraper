@@ -1,0 +1,98 @@
+import requests
+from bs4 import BeautifulSoup
+import re
+
+def get_channel_avatar_link(channel_url):
+    response = requests.get(channel_url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    
+    # Find the avatar URL in the page source
+    avatar_url = None
+    for script in soup.find_all('script'):
+        if script.string and 'ytInitialData' in script.string:
+            match = re.search(r'"avatar":\s*{\s*"thumbnails":\s*\[.*?"url":\s*"([^"]+)"', script.string)
+            if match:
+                avatar_url = match.group(1)
+                break
+    
+    if avatar_url:
+        # Remove the size specification to get the full-size image
+        full_size_url = re.sub(r'=s\d+-', '=s0-', avatar_url)
+        return full_size_url
+    else:
+        return None
+
+def change_to_900px(url):
+    # Change the size specification from s0 to s900
+    return re.sub(r'=s0-', '=s900-', url)
+
+def get_channel_name(url):
+    # Extract channel name from URL
+    if '/@' in url:
+        return url.split('@')[-1]
+    elif '/c/' in url:
+        return url.split('/c/')[-1]
+    else:
+        return "Unknown"
+
+# List of YouTube channel URLs
+channel_urls = [
+    "https://www.youtube.com/c/MarkWiens",
+    "https://www.youtube.com/c/BingingwithBabish",
+    "https://www.youtube.com/c/JamieOliver",
+    "https://www.youtube.com/c/PhilipDeFranco",
+    "https://www.youtube.com/c/VICENews",
+    "https://www.youtube.com/c/SecularTalk",
+    "https://www.youtube.com/c/TheHill",
+    "https://www.youtube.com/c/AthleanX",
+    "https://www.youtube.com/c/JeffNippard",
+    "https://www.youtube.com/c/FitnessBlender",
+    "https://www.youtube.com/c/BodybuildingcomVideo",
+    "https://www.youtube.com/c/WhitneySimmons",
+    "https://www.youtube.com/c/PewDiePie",
+    "https://www.youtube.com/c/DavidDobrik",
+    "https://www.youtube.com/c/MrBeast6000",
+    "https://www.youtube.com/c/EmmaChamberlain",
+    "https://www.youtube.com/c/JamesCharles",
+    "https://www.youtube.com/c/JeffreeStar",
+    "https://www.youtube.com/c/Tati",
+    "https://www.youtube.com/c/NikkieTutorials",
+    "https://www.youtube.com/c/JackieAina",
+    "https://www.youtube.com/c/BretmanRock",
+    "https://www.youtube.com/c/NPRMusic",
+    "https://www.youtube.com/c/VEVO",
+    "https://www.youtube.com/c/AllTrapNation",
+    "https://www.youtube.com/c/LindseyStirling",
+    "https://www.youtube.com/c/RoomieOfficial",
+    "https://www.youtube.com/c/Markiplier",
+    "https://www.youtube.com/c/Ninja",
+    "https://www.youtube.com/c/Pokimane",
+    "https://www.youtube.com/c/TheDiamondMinecart",
+    "https://www.youtube.com/c/Vsauce",
+    "https://www.youtube.com/c/SmarterEveryDay",
+    "https://www.youtube.com/c/Veritasium",
+    "https://www.youtube.com/c/SciShow",
+    "https://www.youtube.com/c/DoctorMike",
+    "https://www.youtube.com/c/HealthNutNutrition",
+    "https://www.youtube.com/c/DoctorOz",
+    "https://www.youtube.com/c/TheDoctors",
+    "https://www.youtube.com/c/UnboxTherapy",
+    "https://www.youtube.com/c/TEDtalksDirector",
+    "https://www.youtube.com/c/FirstWeFeast",
+    "https://www.youtube.com/c/HubermanLab",
+    "https://www.youtube.com/c/LofiGirl",
+    "https://www.youtube.com/c/ChrisBumstead",
+    "https://www.youtube.com/c/KnicksFanTV"
+    # Add more channel URLs here
+]
+
+for url in channel_urls:
+    channel_name = get_channel_name(url)
+    avatar_link = get_channel_avatar_link(url)
+    if avatar_link:
+        avatar_link_900px = change_to_900px(avatar_link)
+        print(f"{channel_name}:")
+        print(f"  Full size: {avatar_link}")
+        print(f"  900px size: {avatar_link_900px}")
+    else:
+        print(f"Couldn't find avatar link for {channel_name}")
